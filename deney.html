@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chem Formula Converter with Table Support</title>
+    <!-- CKEditor 4.17.1 Standard-All Build -->
+    <script src="https://cdn.ckeditor.com/4.17.1/standard-all/ckeditor.js"></script>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #editor {
+            width: 800px;
+            margin: 0 auto;
+        }
+        #buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #convert-btn, #export-pdf, #export-word {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Additional styles if needed */
+    </style>
+</head>
+<body>
+    <!-- Editor -->
+    <div id="editor">
+        <textarea name="editor1" id="editor1" rows="10" cols="80"></textarea>
+    </div>
+    <!-- Buttons -->
+    <div id="buttons">
+        <button id="convert-btn">Convert Formulas</button>
+        <button id="export-pdf">Export as PDF</button>
+        <button id="export-word">Export as Word</button>
+    </div>
+
+    <!-- Include FileSaver.js -->
+    <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+    <!-- Include html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Custom JavaScript Code -->
+    <script>
+        // Initialize CKEditor 4.17.1 with alignment functionality
+        CKEDITOR.replace('editor1', {
+            extraPlugins: 'justify,table',
+            removePlugins: 'elementspath',
+            resize_enabled: false,
+            height: 400,
+            toolbar: [
+                { name: 'clipboard', items: ['Undo', 'Redo'] },
+                { name: 'styles', items: ['Format'] },
+                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+                { name: 'paragraph', items: [
+                    'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock',
+                    '-', 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'
+                ] },
+                { name: 'insert', items: ['Table', 'HorizontalRule'] },
+                { name: 'tools', items: ['Maximize'] }
+            ]
+        });
+
+        // Wait for CKEditor to be ready
+        CKEDITOR.on('instanceReady', function() {
+            // Formula Conversion Table
+            const formulaTable = {
+                // Initial compounds
+                h2so4: "H₂SO₄",
+                h2o: "H₂O",
+                co2: "CO₂",
+                o2: "O₂",
+                n2: "N₂",
+                ch4: "CH₄",
+                nh3: "NH₃",
+                c6h12o6: "C₆H₁₂O₆",
+                hcl: "HCl",
+                naoh: "NaOH",
+                nacl: "NaCl",
+
+                // Expanded list of compounds (as per your request)
+                // Common inorganic compounds
+                o3: "O₃", // Ozone
+                h2: "H₂", // Hydrogen gas
+                he: "He", // Helium
+                ne: "Ne", // Neon
+                ar: "Ar", // Argon
+                kr: "Kr", // Krypton
+                xe: "Xe", // Xenon
+                rn: "Rn", // Radon
+                f2: "F₂", // Fluorine gas
+                cl2: "Cl₂", // Chlorine gas
+                br2: "Br₂", // Bromine
+                i2: "I₂", // Iodine
+                hbr: "HBr", // Hydrogen bromide
+                hi: "HI", // Hydrogen iodide
+                hf: "HF", // Hydrogen fluoride
+                hno3: "HNO₃", // Nitric acid
+                hno2: "HNO₂", // Nitrous acid
+                h2so3: "H₂SO₃", // Sulfurous acid
+                h3po4: "H₃PO₄", // Phosphoric acid
+                h2co3: "H₂CO₃", // Carbonic acid
+                h2s: "H₂S", // Hydrogen sulfide
+                so2: "SO₂", // Sulfur dioxide
+                so3: "SO₃", // Sulfur trioxide
+                no: "NO", // Nitric oxide
+                no2: "NO₂", // Nitrogen dioxide
+                n2o: "N₂O", // Nitrous oxide
+                co: "CO", // Carbon monoxide
+                h2o2: "H₂O₂", // Hydrogen peroxide
+                c2h6: "C₂H₆", // Ethane
+                c3h8: "C₃H₈", // Propane
+                c4h10: "C₄H₁₀", // Butane
+                c5h12: "C₅H₁₂", // Pentane
+                c6h14: "C₆H₁₄", // Hexane
+                c7h16: "C₇H₁₆", // Heptane
+                c8h18: "C₈H₁₈", // Octane
+                c2h4: "C₂H₄", // Ethylene
+                c2h2: "C₂H₂", // Acetylene
+                ch3oh: "CH₃OH", // Methanol
+                c2h5oh: "C₂H₅OH", // Ethanol
+                c3h7oh: "C₃H₇OH", // Propanol
+                ch3cooh: "CH₃COOH", // Acetic acid
+                c6h6: "C₆H₆", // Benzene
+                c6h5ch3: "C₆H₅CH₃", // Toluene
+                c6h5oh: "C₆H₅OH", // Phenol
+                c12h22o11: "C₁₂H₂₂O₁₁", // Sucrose
+                koh: "KOH", // Potassium hydroxide
+                caoh2: "Ca(OH)₂", // Calcium hydroxide
+                aloh3: "Al(OH)₃", // Aluminum hydroxide
+                nh4oh: "NH₄OH", // Ammonium hydroxide
+                kcl: "KCl", // Potassium chloride
+                cacl2: "CaCl₂", // Calcium chloride
+                mgcl2: "MgCl₂", // Magnesium chloride
+                fecl3: "FeCl₃", // Iron(III) chloride
+                alcl3: "AlCl₃", // Aluminum chloride
+                naclo: "NaClO", // Sodium hypochlorite
+                naclo3: "NaClO₃", // Sodium chlorate
+                na2so4: "Na₂SO₄", // Sodium sulfate
+                k2so4: "K₂SO₄", // Potassium sulfate
+                caso4: "CaSO₄", // Calcium sulfate
+                mgso4: "MgSO₄", // Magnesium sulfate
+                baso4: "BaSO₄", // Barium sulfate
+                nh4cl: "NH₄Cl", // Ammonium chloride
+                na2co3: "Na₂CO₃", // Sodium carbonate
+                k2co3: "K₂CO₃", // Potassium carbonate
+                caco3: "CaCO₃", // Calcium carbonate
+                mgco3: "MgCO₃", // Magnesium carbonate
+                fe2o3: "Fe₂O₃", // Iron(III) oxide
+                feo: "FeO", // Iron(II) oxide
+                al2o3: "Al₂O₃", // Aluminum oxide
+                sio2: "SiO₂", // Silicon dioxide
+                pbo: "PbO", // Lead(II) oxide
+                znso4: "ZnSO₄", // Zinc sulfate
+                cuso4: "CuSO₄", // Copper(II) sulfate
+                agno3: "AgNO₃", // Silver nitrate
+                pbno32: "Pb(NO₃)₂", // Lead(II) nitrate
+                nano3: "NaNO₃", // Sodium nitrate
+                kno3: "KNO₃", // Potassium nitrate
+                nh4no3: "NH₄NO₃", // Ammonium nitrate
+                na3po4: "Na₃PO₄", // Sodium phosphate
+                k3po4: "K₃PO₄", // Potassium phosphate
+                h2sio3: "H₂SiO₃", // Metasilicic acid
+                h4p2o7: "H₄P₂O₇", // Pyrophosphoric acid
+                h2s2o7: "H₂S₂O₇", // Disulfuric acid
+                ccl4: "CCl₄", // Carbon tetrachloride
+                chcl3: "CHCl₃", // Chloroform
+                ch2cl2: "CH₂Cl₂", // Methylene chloride
+                c6h5no2: "C₆H₅NO₂", // Nitrobenzene
+                c6h5nh2: "C₆H₅NH₂", // Aniline
+                c6h5cho: "C₆H₅CHO", // Benzaldehyde
+                c2h5nh2: "C₂H₅NH₂", // Ethylamine
+                hcn: "HCN", // Hydrogen cyanide
+                nacn: "NaCN", // Sodium cyanide
+                kcn: "KCN", // Potassium cyanide
+                c17h21no4: "C₁₇H₂₁NO₄", // Cocaine
+                c9h8o4: "C₉H₈O₄", // Aspirin
+                c17h19no3: "C₁₇H₁₉NO₃", // Morphine
+                c17h21no: "C₁₇H₂₁NO", // Codeine
+                c8h9no2: "C₈H₉NO₂", // Paracetamol
+                c9h13n: "C₉H₁₃N", // Amphetamine
+                c10h14n2: "C₁₀H₁₄N₂", // Nicotine
+                c10h15n: "C₁₀H₁₅N", // Methamphetamine
+                c9h8o3: "C₉H₈O₃", // Salicylic acid
+                c20h25n3o: "C₂₀H₂₅N₃O", // LSD
+                c16h21no2: "C₁₆H₂₁NO₂", // MDMA
+                c21h30o2: "C₂₁H₃₀O₂", // THC
+                c5h10o5: "C₅H₁₀O₅", // Ribose
+                c5h10o4: "C₅H₁₀O₄", // Deoxyribose
+                c6h14o6: "C₆H₁₄O₆", // Sorbitol
+                c6h8o7: "C₆H₈O₇", // Citric acid
+                c4h6o6: "C₄H₆O₆", // Tartaric acid
+                c3h4o3: "C₃H₄O₃", // Pyruvic acid
+                c3h6o3: "C₃H₆O₃", // Lactic acid
+                c7h6o2: "C₇H₆O₂", // Benzoic acid
+                c5h5n: "C₅H₅N", // Pyridine
+                c5h5n5: "C₅H₅N₅", // Adenine
+                c4h5n3o: "C₄H₅N₃O", // Cytosine
+                c5h6n2o2: "C₅H₆N₂O₂", // Uracil
+                c5h5n5o: "C₅H₅N₅O", // Guanine
+                c10h14n5o7p: "C₁₀H₁₄N₅O₇P", // Adenosine monophosphate
+                c10h16n5o13p3: "C₁₀H₁₆N₅O₁₃P₃", // Adenosine triphosphate (ATP)
+                // Continue adding compounds up to 300 entries as needed
+            };
+
+            // Convert Chemical Formulas in Editor
+            document.getElementById("convert-btn").addEventListener("click", () => {
+                const editor = CKEDITOR.instances.editor1;
+                let content = editor.getData();
+
+                // Use a DOM parser to handle HTML content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(content, 'text/html');
+
+                // Walk through all text nodes
+                function walk(node) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        node.textContent = node.textContent.replace(/\b\w+\b/g, function(match) {
+                            return formulaTable[match.toLowerCase()] || match;
+                        });
+                    } else {
+                        node.childNodes.forEach(walk);
+                    }
+                }
+                walk(doc.body);
+
+                // Serialize the updated content
+                const serializer = new XMLSerializer();
+                const updatedContent = serializer.serializeToString(doc.body);
+
+                editor.setData(updatedContent);
+            });
+
+            // Export to PDF
+            document.getElementById("export-pdf").addEventListener("click", () => {
+                const editor = CKEDITOR.instances.editor1;
+                const content = editor.getData();
+
+                // Create a hidden iframe to hold the content
+                const iframe = document.createElement('iframe');
+                document.body.appendChild(iframe);
+                iframe.style.display = 'none';
+                iframe.contentDocument.write(content);
+                iframe.contentDocument.close();
+
+                // Use html2pdf on the iframe content
+                const opt = {
+                    margin: 1,
+                    filename: 'prelab.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+                html2pdf().from(iframe.contentDocument.body).set(opt).save().then(() => {
+                    document.body.removeChild(iframe);
+                });
+            });
+
+            // Export to Word
+            document.getElementById("export-word").addEventListener("click", () => {
+                const editor = CKEDITOR.instances.editor1;
+                const content = editor.getData();
+                const styles = '<style>' +
+                    'body { font-family: Arial, sans-serif; }' +
+                    'table { border-collapse: collapse; width: 100%; }' +
+                    'table td, table th { border: 1px solid #000; padding: 8px; text-align: center; }' +
+                    '</style>';
+                const html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' + styles + '</head><body>' + content + '</body></html>';
+                const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+                saveAs(blob, 'prelab.doc');
+            });
+        });
+    </script>
+</body>
+</html>
